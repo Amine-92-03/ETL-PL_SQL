@@ -1,0 +1,12 @@
+-- executer sql puis sortir 
+echo EXIT | sqlplus admin/admin as sysdba @"C:\users\pc\ecriture_base_to_file.sql" 
+
+
+--connexion a sql*plus
+sqlplus <user_id/password>@SID @<sql_file_name)
+
+exemple reel
+
+sqlplus OT/orcl@orcl as sysdba
+
+sqlplus sys/orcl@orcl as sysdba

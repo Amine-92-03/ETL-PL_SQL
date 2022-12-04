@@ -54,7 +54,7 @@ BEGIN
                                   || i.grantee
                                   || ';'
                                   || l_time);
-
+  
         k := k + 1;
     END LOOP;
     --Fermeture du fichier

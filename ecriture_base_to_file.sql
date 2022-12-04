@@ -1,53 +1,84 @@
 SET SERVEROUTPUT ON;
+
 DECLARE
-L_FILE UTL_FILE.FILE_TYPE;
-L_LOCATION VARCHAR2(100) := 'ORACLE_BASE';
-L_FILENAME VARCHAR2(100);
-L_TEXT VARCHAR2(100);
-L_TIME VARCHAR2(100);
-isOpen BOOLEAN;
-k NUMERIC := 0;
-Numb NUMBER;
+    l_file     utl_file.file_type;
+    l_location VARCHAR2(100) := 'ORACLE_BASE';
+    l_filename VARCHAR2(100);
+    l_text     VARCHAR2(100);
+    l_time     VARCHAR2(100);
+    isopen     BOOLEAN;
+    k          NUMERIC := 0;
+    numb       NUMBER;
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('Bonjour'); 
+    dbms_output.put_line('Bonjour'); 
     -- récupération la valeur de la date au moment de l'execution
-    SELECT TO_CHAR(SYSDATE, 'YYYYMMDD_HH24MI' ) INTO L_TIME FROM dual;
-    L_FILENAME := 'test_amine_'|| L_TIME ||'.txt';
-    DBMS_OUTPUT.PUT_LINE(L_FILENAME); 
+    SELECT
+        to_char(sysdate, 'YYYYMMDD_HH24MI')
+    INTO l_time
+    FROM
+        dual;
+
+    l_filename := 'test_amine_'
+                  || l_time
+                  || '.txt';
+    dbms_output.put_line(l_filename); 
     -- Verification si le fichier est ouver pour le fermer 
-    isOpen := UTL_FILE.IS_OPEN( L_FILE );
-    IF isOpen != TRUE THEN
-      UTL_FILE.FCLOSE(L_FILE);
+    isopen := utl_file.is_open(l_file);
+    IF isopen != true THEN
+        utl_file.fclose(l_file);
     END IF;
     -- Ouverture du fichier pour ecriture w 
-    L_FILE := UTL_FILE.FOPEN(L_LOCATION, L_FILENAME, 'w'); 
+    l_file := utl_file.fopen(l_location, l_filename, 'w'); 
     --Numb := 1/0;
     -- Ecriture des valeurs 1 par 1 sep = ;
-    FOR I IN (select grantor,grantee, table_schema, table_name, privilege from   all_tab_privs ) LOOP
-         SELECT TO_CHAR(SYSDATE, 'MM-DD-YYYY' ) INTO L_TIME FROM dual;
-         UTL_FILE.PUT_LINE(L_FILE, k ||';' || I.grantor ||';'||I.grantee||';'||L_TIME);
-         k := k + 1 ;
+    FOR i IN (
+        SELECT
+            grantor,
+            grantee,
+            table_schema,
+            table_name,
+            privilege
+        FROM
+            all_tab_privs
+    ) LOOP
+        SELECT
+            to_char(sysdate, 'MM-DD-YYYY')
+        INTO l_time
+        FROM
+            dual;
+
+        utl_file.put_line(l_file, k
+                                  || ';'
+                                  || i.grantor
+                                  || ';'
+                                  || i.grantee
+                                  || ';'
+                                  || l_time);
+
+        k := k + 1;
     END LOOP;
     --Fermeture du fichier
-    UTL_FILE.FCLOSE(L_FILE);
+    utl_file.fclose(l_file);
 --Gestion des exception
 EXCEPTION
-    WHEN UTL_FILE.READ_ERROR THEN
-        DBMS_OUTPUT.PUT_LINE(' Cannot read file');
-    WHEN UTL_FILE.WRITE_ERROR THEN
-        DBMS_OUTPUT.PUT_LINE(' Cannot write file');
-    WHEN NO_DATA_FOUND THEN
-        DBMS_OUTPUT.PUT_LINE(' END FILE ');  
-        UTL_FILE.FCLOSE(L_FILE);
-    WHEN ZERO_DIVIDE THEN
-    DBMS_OUTPUT.PUT_LINE('Erreur: ' ||SQLERRM); 
+    WHEN utl_file.read_error THEN
+        dbms_output.put_line(' Cannot read file');
+    WHEN utl_file.write_error THEN
+        dbms_output.put_line(' Cannot write file');
+    WHEN no_data_found THEN
+        dbms_output.put_line(' END FILE ');
+        utl_file.fclose(l_file);
+    WHEN zero_divide THEN
+        dbms_output.put_line('Erreur: ' || sqlerrm); 
     --Ecriture des erreur dans un fichier de log
-    UTL_FILE.PUT_LINE(L_FILE, L_TIME || ' Erreur: ' ||SQLERRM);
-    UTL_FILE.FCLOSE(L_FILE);
+        utl_file.put_line(l_file, l_time
+                                  || ' Erreur: '
+                                  || sqlerrm);
+        utl_file.fclose(l_file);
     --INSERT INTO  LOG_TABLE (MESSAGE)  VALUES ('SQLERRM');
 END;
 /
 
 
---SELECT * FROM LOG_TABLE
 
+--
